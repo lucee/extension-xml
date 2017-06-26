@@ -1,0 +1,276 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+
+  <!-- <parent>
+    <groupId>org.lucee</groupId>
+    <artifactId>parent</artifactId>
+    <version>5.0.0.22</version>
+    
+  </parent> -->
+
+  <groupId>org.lucee</groupId>
+  <artifactId>xml</artifactId>
+  <version>1.0.0.1</version>
+  <packaging>bundle</packaging>
+
+  <name>Lucee XML</name>
+  <description>XML Util jar</description>
+  <url>http://maven.lucee.org/xml/</url>
+
+
+  <properties>
+      <timestamp>${maven.build.timestamp}</timestamp>
+      <maven.build.timestamp.format>yyyy/MM/dd HH:mm:ss z</maven.build.timestamp.format>
+      <maven.build.timestamp.zone>UTC</maven.build.timestamp.zone>
+      <maven.build.timestamp.locale>en,GB</maven.build.timestamp.locale>
+  </properties>
+
+  <licenses>
+    <license>
+     <name>The GNU Lesser General Public License, Version 2.1</name>
+     <url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+     <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>micstriit</id>
+      <name>Michael Offner</name>
+      <email>michael@lucee.org</email>
+      <organization>Lucee Association Switzerland</organization>
+      <organizationUrl>http://lucee.org</organizationUrl>
+      <roles>
+        <role>Project-Administrator</role>
+        <role>Developer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+  </developers>
+   
+  <profiles>
+    <profile>
+        <id>release-sign-artifacts</id>
+        <activation>
+            <property>
+                <name>performRelease</name>
+                <value>true</value>
+            </property>
+        </activation>
+        <build>
+            <plugins>
+              <!-- GPG sign -->
+              <plugin>
+           <groupId>org.apache.maven.plugins</groupId>
+           <artifactId>maven-gpg-plugin</artifactId>
+           <version>1.5</version>
+                <executions>
+                  <execution>
+                    <id>sign-artifacts</id>
+                    <phase>verify</phase>
+                    <goals>
+                      <goal>sign</goal>
+                    </goals>
+                  </execution>
+                </executions>
+              </plugin>
+            </plugins>
+        </build>
+    </profile>
+</profiles>
+     
+
+  <build>
+      <plugins>
+        <!-- publish to central maven -->
+        <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-staging-maven-plugin</artifactId>
+          <version>1.6.3</version>
+          <extensions>true</extensions>
+          <configuration>
+            <serverId>ossrh</serverId>
+            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.5</version>
+          <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+            <useReleaseProfile>false</useReleaseProfile>
+            <releaseProfiles>release</releaseProfiles>
+            <goals>deploy</goals>
+          </configuration>
+        </plugin> 
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>attach-sources</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>attach-javadocs</id>
+              <goals>
+                <goal>jar</goal>
+              </goals>
+            <!-- add this to disable checking 
+            <configuration>  
+                <additionalparam>-Xdoclint:none</additionalparam>
+            </configuration>-->
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.6</version>
+          <extensions>true</extensions>
+          
+            <configuration>
+                <excludes>
+                  <exclude>.*</exclude>
+              </excludes>
+              <archive>
+                    <manifestFile>src/main/java/META-INF/MANIFEST.MF</manifestFile>
+                <manifest>
+                  <mainClass>${main.class}</mainClass>
+                </manifest>
+                  </archive> 
+              </configuration>
+
+          </plugin>
+         
+         <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-compiler-plugin</artifactId>
+      <version>3.3</version>
+           <configuration>
+             <source>1.7</source>
+             <target>1.7</target>
+
+           </configuration>
+
+      </plugin>
+
+
+      <plugin>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>maven-bundle-plugin</artifactId>
+            <version>1.4.0</version>
+            <extensions>true</extensions>
+            <configuration>
+                <instructions>
+                    <Bundle-SymbolicName>${pom.groupId}.${pom.artifactId}</Bundle-SymbolicName>
+                    <Bundle-Name>${pom.artifactId}</Bundle-Name>
+                    <Bundle-Version>${pom.version}</Bundle-Version>
+                    <!-- <Private-Package>org.wso2.mbp.helloworld</Private-Package>
+                    <Bundle-Activator>org.wso2.mbp.helloworld.Activator</Bundle-Activator>
+                    <Import-Package>
+                        org.osgi.framework,
+                        *;resolution:=optional
+                    </Import-Package>
+                    <Export-Package>
+                        org.lucee.xml
+                    </Export-Package> -->
+                </instructions>
+            </configuration>
+        </plugin>
+
+      </plugins>
+  </build>
+
+
+
+
+	<dependencies>
+<!-- apache.xml.xalan -->
+  <dependency>
+  	<groupId>org.lucee</groupId>
+  	<artifactId>xalan</artifactId>
+  	<version>2.7.2</version>
+  </dependency>
+    <dependency>
+  	<groupId>org.lucee</groupId>
+  	<artifactId>xalan-serializer</artifactId>
+  	<version>2.7.2</version>
+  </dependency>
+<!-- apache.xml.xerces - 2.11.0 -->
+  <dependency>
+  	<groupId>org.lucee</groupId>
+  	<artifactId>xml-xerces</artifactId>
+  	<version>2.11.0</version>
+  </dependency>
+  
+<!-- xml.apis - 1.4.1 -->
+  <dependency>
+  	<groupId>org.lucee</groupId>
+  	<artifactId>xml-apis</artifactId>
+  	<version>1.4.1</version>
+  </dependency>
+
+  <dependency>
+  	<groupId>org.lucee</groupId>
+  	<artifactId>xml-resolver</artifactId>
+  	<version>1.2.0</version>
+  </dependency>
+
+<!-- tagsoup - 1.2.1 -->
+      <dependency>
+         <groupId>tagsoup</groupId>
+         <artifactId>tagsoup</artifactId>
+         <type>jar</type>
+         <version>1.2.1.0002L</version>
+         <scope>compile</scope>
+      </dependency>
+   </dependencies>
+
+
+
+   <repositories>
+      <repository>
+         <id>repo</id>
+         <url>https://raw.githubusercontent.com/lucee/mvn/master/releases</url>
+      </repository>
+      <repository>
+        <id>snapi</id>
+        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      </repository>
+   </repositories>
+
+  <scm>
+    <url>https://github.com/lucee/lucee-xml</url>
+             <connection>scm:git:git://github.com/lucee/lucee-xml.git</connection>
+    <developerConnection>scm:git:git@github.com:lucee/lucee-xml.git</developerConnection>
+    <tag>${project.version}</tag>
+  </scm>
+
+  <distributionManagement>
+    <repository>
+    <id>ossrh</id>
+    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+  </repository>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+</project>
