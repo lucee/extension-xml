@@ -54,7 +54,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.xalan.processor.TransformerFactoryImpl;
-import org.apache.xerces.jaxp.DocumentBuilderFactoryImpl;
 import org.ccil.cowan.tagsoup.Parser;
 import org.lucee.xml.impl.Utils;
 import org.lucee.xml.impl.XMLValidator;
@@ -62,6 +61,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -185,8 +185,15 @@ public final class XMLUtility {
     
     
     public static TransformerFactory getTransformerFactory() {
+    	//return TransformerFactory.newInstance();
     	if(transformerFactory==null)transformerFactory=new TransformerFactoryImpl();
         return transformerFactory;
+    }
+    
+
+    public static final Document parse(InputSource xml,InputSource validator, boolean isHtml) 
+        throws SAXException, IOException {
+    	return parse(xml, validator, null, isHtml);
     }
     
     /**
@@ -195,7 +202,7 @@ public final class XMLUtility {
      * @param isHtml is a HTML or XML Object
      * @return parsed Document
      */
-    public static final Document parse(InputSource xml,InputSource validator, boolean isHtml) 
+    public static final Document parse(InputSource xml,InputSource validator, EntityResolver entityResolver, boolean isHtml) 
         throws SAXException, IOException {
         
         if(!isHtml) {
@@ -221,7 +228,7 @@ public final class XMLUtility {
             
             try {
 				DocumentBuilder builder = factory.newDocumentBuilder();
-	            builder.setEntityResolver(new XMLEntityResolverDefaultHandler(validator));
+	            builder.setEntityResolver(entityResolver!=null?entityResolver:new XMLEntityResolverDefaultHandler(validator));
 	            builder.setErrorHandler(new ThrowingErrorHandler(true,true,false));
 	            return  builder.parse(xml);
 			} 
@@ -253,12 +260,13 @@ public final class XMLUtility {
     }
 	
 	private static DocumentBuilderFactory newDocumentBuilderFactory() {
-		try{
+		/*try{
     		return new DocumentBuilderFactoryImpl();
     	}
     	catch (Exception t) {
     		return DocumentBuilderFactory.newInstance();
-    	}
+    	}*/
+		return DocumentBuilderFactory.newInstance();
 	}
 
 	private static void setAttributeEL(DocumentBuilderFactory factory,String name, Object value) {
@@ -447,8 +455,7 @@ public final class XMLUtility {
 		}
 		return null;
 	}
-	
-	
+    
     public static InputSource toInputSource(File res, Charset cs) throws IOException {
         	String str = Utils.toString((res), cs);
         	return new InputSource(new StringReader(str));
@@ -520,9 +527,11 @@ public final class XMLUtility {
 		else parent.appendChild(node);
 	}
 
-	public static XMLReader createXMLReader(String oprionalDefaultSaxParser) throws SAXException {
+	public static XMLReader createXMLReader(String optionalDefaultSaxParser) throws SAXException {
+		if(optionalDefaultSaxParser==null) return XMLReaderFactory.createXMLReader();
+		
 		try{
-			return XMLReaderFactory.createXMLReader(oprionalDefaultSaxParser);
+			return XMLReaderFactory.createXMLReader(optionalDefaultSaxParser);
 		}
 		catch (Exception t){
 			return XMLReaderFactory.createXMLReader();
